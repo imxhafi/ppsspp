@@ -48,9 +48,12 @@ public:
 		return false;
 	}
 	bool CanBeFocused() const override { return false; }
+	void SetOpacity(float opacity) { opacity_ = opacity < 0.0f ? 0.0f : (opacity > 1.0f ? 1.0f : opacity); }
+	float GetOpacity() const { return opacity_; }
 
 protected:
 	std::string key_;
+	float opacity_ = 1.0f;
 };
 
 class MultiTouchButton : public GamepadComponent {
@@ -72,7 +75,6 @@ public:
 
 	bool CanGlide() const;
 	void SetMinimumAlpha(float minAlpha) { minimumAlpha_ = minAlpha; }
-	void SetOpacity(float opacity) { buttonOpacity_ = opacity < 0.0f ? 0.0f : (opacity > 1.0f ? 1.0f : opacity); }
 
 protected:
 	uint32_t pointerDownMask_ = 0;
@@ -86,7 +88,6 @@ private:
 	float angle_ = 0.0f;
 	bool flipImageH_ = false;
 	float minimumAlpha_ = 0.0f;
-	float buttonOpacity_ = 1.0f;
 };
 
 class BoolButton : public MultiTouchButton {
