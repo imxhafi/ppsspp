@@ -111,8 +111,13 @@ struct TouchControlConfig : public ConfigBlock {
 			touchCustom[i].show = false;
 		}
 	}
-	// the PSP button's center (triangle, circle, square, cross)
+	// Legacy shared center retained for compatibility with existing configurations.
 	ConfigTouchPos touchActionButtonCenter;
+	// Independent layout settings for each PSP face button.
+	ConfigTouchPos touchCircleButton;
+	ConfigTouchPos touchCrossButton;
+	ConfigTouchPos touchTriangleButton;
+	ConfigTouchPos touchSquareButton;
 	// space between those PSP buttons
 	float fActionButtonSpacing = 1.0f;
 	// the D-pad (PSP cross) position
