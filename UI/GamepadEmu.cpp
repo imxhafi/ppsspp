@@ -518,7 +518,7 @@ void PSPStick::GetContentDimensions(const UIContext &dc, float &w, float &h) con
 }
 
 void PSPStick::Draw(UIContext &dc) {
-	float opacity = g_gamepadOpacity;
+	float opacity = g_gamepadOpacity * GetOpacity();
 	if (opacity <= 0.0f)
 		return;
 
@@ -636,7 +636,7 @@ PSPCustomStick::PSPCustomStick(ImageID bgImg, const char *key, ImageID stickImg,
 }
 
 void PSPCustomStick::Draw(UIContext &dc) {
-	float opacity = g_gamepadOpacity;
+	float opacity = g_gamepadOpacity * GetOpacity();
 	if (opacity <= 0.0f)
 		return;
 
