@@ -1222,6 +1222,10 @@ void TouchControlConfig::ResetLayout() {
 		pos->scale = defaultTouchPosShow.scale;
 	};
 	reset(&touchActionButtonCenter);
+	reset(&touchCircleButton);
+	reset(&touchCrossButton);
+	reset(&touchTriangleButton);
+	reset(&touchSquareButton);
 	fActionButtonSpacing = 1.0f;
 	reset(&touchDpad);
 	fDpadSpacing = 1.0f;
@@ -1298,6 +1302,14 @@ static constexpr ConfigSetting touchControlSettings[] = {
 	ConfigSetting("ActionButtonSpacing2", SETTING(g_Config.touchControlsLandscape, fActionButtonSpacing), 1.0f, CfgFlag::PER_GAME),
 	ConfigSetting("ActionButtonCenterX", "ActionButtonCenterY", "ActionButtonScale", nullptr, SETTING(g_Config.touchControlsLandscape, touchActionButtonCenter), defaultTouchPosShow, CfgFlag::PER_GAME),
 	ConfigSetting("ActionButtonOpacity", SETTING(g_Config.touchControlsLandscape, touchActionButtonCenter.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("CircleButtonX", "CircleButtonY", "CircleButtonScale", nullptr, SETTING(g_Config.touchControlsLandscape, touchCircleButton), defaultTouchPosShow, CfgFlag::PER_GAME),
+	ConfigSetting("CrossButtonX", "CrossButtonY", "CrossButtonScale", nullptr, SETTING(g_Config.touchControlsLandscape, touchCrossButton), defaultTouchPosShow, CfgFlag::PER_GAME),
+	ConfigSetting("TriangleButtonX", "TriangleButtonY", "TriangleButtonScale", nullptr, SETTING(g_Config.touchControlsLandscape, touchTriangleButton), defaultTouchPosShow, CfgFlag::PER_GAME),
+	ConfigSetting("SquareButtonX", "SquareButtonY", "SquareButtonScale", nullptr, SETTING(g_Config.touchControlsLandscape, touchSquareButton), defaultTouchPosShow, CfgFlag::PER_GAME),
+	ConfigSetting("CircleButtonOpacity", SETTING(g_Config.touchControlsLandscape, touchCircleButton.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("CrossButtonOpacity", SETTING(g_Config.touchControlsLandscape, touchCrossButton.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("TriangleButtonOpacity", SETTING(g_Config.touchControlsLandscape, touchTriangleButton.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("SquareButtonOpacity", SETTING(g_Config.touchControlsLandscape, touchSquareButton.opacity), 1.0f, CfgFlag::PER_GAME),
 	ConfigSetting("DPadOpacity", SETTING(g_Config.touchControlsLandscape, touchDpad.opacity), 1.0f, CfgFlag::PER_GAME),
 	ConfigSetting("StartKeyOpacity", SETTING(g_Config.touchControlsLandscape, touchStartKey.opacity), 1.0f, CfgFlag::PER_GAME),
 	ConfigSetting("SelectKeyOpacity", SETTING(g_Config.touchControlsLandscape, touchSelectKey.opacity), 1.0f, CfgFlag::PER_GAME),
