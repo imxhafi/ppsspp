@@ -890,10 +890,12 @@ void InitPadLayout(TouchControlConfig *config, DeviceOrientation orientation, fl
 	}
 	initTouchPos(&config->touchActionButtonCenter, Action_button_center_X, Action_button_center_Y);
 	// Initialize independent button positions from the legacy shared layout on first run.
-	initTouchPos(&config->touchCircleButton, Action_button_center_X + Action_button_spacing, Action_button_center_Y);
-	initTouchPos(&config->touchCrossButton, Action_button_center_X, Action_button_center_Y + Action_button_spacing);
-	initTouchPos(&config->touchTriangleButton, Action_button_center_X, Action_button_center_Y - Action_button_spacing);
-	initTouchPos(&config->touchSquareButton, Action_button_center_X - Action_button_spacing, Action_button_center_Y);
+	const float legacyActionCenterX = config->touchActionButtonCenter.x * xres;
+	const float legacyActionCenterY = config->touchActionButtonCenter.y * yres;
+	initTouchPos(&config->touchCircleButton, legacyActionCenterX + Action_button_spacing, legacyActionCenterY);
+	initTouchPos(&config->touchCrossButton, legacyActionCenterX, legacyActionCenterY + Action_button_spacing);
+	initTouchPos(&config->touchTriangleButton, legacyActionCenterX, legacyActionCenterY - Action_button_spacing);
+	initTouchPos(&config->touchSquareButton, legacyActionCenterX - Action_button_spacing, legacyActionCenterY);
 
 	//D-PAD (up down left right) (aka PSP cross)----------------------------
 	//radius to the D-pad
