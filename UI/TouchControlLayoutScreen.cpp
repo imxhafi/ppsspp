@@ -120,7 +120,7 @@ public:
 
 	void Draw(UIContext &dc) override {
 		scale_ = theScale_*layoutAreaScale;
-		float opacity = GamepadGetOpacity();
+		float opacity = GamepadGetOpacity() * GetOpacity();
 		uint32_t colorBg = colorAlpha(GetButtonColor(), opacity);
 		uint32_t color = colorAlpha(0xFFFFFF, opacity);
 
@@ -249,7 +249,7 @@ public:
 
 	void Draw(UIContext &dc) override {
 		scale_ = theScale_*layoutAreaScale;
-		float opacity = GamepadGetOpacity();
+		float opacity = GamepadGetOpacity() * GetOpacity();
 		uint32_t colorBg = colorAlpha(GetButtonColor(), opacity);
 		uint32_t color = colorAlpha(0xFFFFFF, opacity);
 
@@ -294,7 +294,7 @@ public:
 	void Draw(UIContext &dc) override {
 		scale_ = theScale_ * layoutAreaScale;
 
-		float opacity = GamepadGetOpacity();
+		float opacity = GamepadGetOpacity() * GetOpacity();
 		uint32_t colorBg = colorAlpha(GetButtonColor(), opacity);
 
 		const ImageID stickImage = g_Config.iTouchButtonStyle ? ImageID("I_STICK_LINE") : ImageID("I_STICK");
