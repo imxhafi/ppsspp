@@ -79,6 +79,8 @@ struct ConfigTouchPos {
 	float x = -1.0f;
 	float y = -1.0f;
 	float scale = 1.0f;
+	// Per-control alpha multiplier. Kept separate from global fade/opacity.
+	float opacity = 1.0f;
 	// Note: Show is not used for all settings.
 	bool show = true;
 };
