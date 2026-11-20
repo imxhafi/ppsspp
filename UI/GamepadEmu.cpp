@@ -1121,17 +1121,19 @@ GamepadEmuView::GamepadEmuView(const TouchControlConfig &config, float xres, flo
 		dpad->SetOpacity(config.touchDpad.opacity);
 	}
 
-	if (config.touchAnalogStick.show)
+	if (config.touchAnalogStick.show) {
 		auto stick = Add(new PSPStick(stickBg, "Left analog stick", stickImage, ImageID("I_STICK"), 0, config.touchAnalogStick.scale, buttonLayoutParams(config.touchAnalogStick)));
 		stick->SetOpacity(config.touchAnalogStick.opacity);
+	}
 
 	if (config.touchRightAnalogStick.show) {
-		if (g_Config.bRightAnalogCustom)
+		if (g_Config.bRightAnalogCustom) {
 			auto stick = Add(new PSPCustomStick(stickBg, "Right analog stick", stickImage, ImageID("I_STICK"), 1, config.touchRightAnalogStick.scale, buttonLayoutParams(config.touchRightAnalogStick)));
 			stick->SetOpacity(config.touchRightAnalogStick.opacity);
-		else
+		} else {
 			auto stick = Add(new PSPStick(stickBg, "Right analog stick", stickImage, ImageID("I_STICK"), 1, config.touchRightAnalogStick.scale, buttonLayoutParams(config.touchRightAnalogStick)));
 			stick->SetOpacity(config.touchRightAnalogStick.opacity);
+		}
 	}
 
 	// Sanitize custom button images, while adding them.
