@@ -488,17 +488,17 @@ void ControlLayoutView::CreateViews() {
 	// Create all the subviews.
 	TouchControlConfig &touch = g_Config.GetTouchControlsConfig(deviceOrientation_);
 
-	if (touch.bShowTouchCircle || touch.bShowTouchCross || touch.bShowTouchTriangle || touch.bShowTouchSquare) {
-		PSPActionButtons *actionButtons = new PSPActionButtons(touch.touchActionButtonCenter, "Action buttons", touch.fActionButtonSpacing, bounds);
-		actionButtons->setCircleVisibility(touch.bShowTouchCircle);
-		actionButtons->setCrossVisibility(touch.bShowTouchCross);
-		actionButtons->setTriangleVisibility(touch.bShowTouchTriangle);
-		actionButtons->setSquareVisibility(touch.bShowTouchSquare);
-		controls_.push_back(actionButtons);
-	}
+	ImageID roundImage = g_Config.iTouchButtonStyle ? ImageID("I_ROUND_LINE") : ImageID("I_ROUND");
+	if (touch.bShowTouchCircle)
+		controls_.push_back(new DragDropButton(touch.touchCircleButton, "Circle button", roundImage, ImageID("I_CIRCLE"), bounds));
+	if (touch.bShowTouchCross)
+		controls_.push_back(new DragDropButton(touch.touchCrossButton, "Cross button", roundImage, ImageID("I_CROSS"), bounds));
+	if (touch.bShowTouchTriangle)
+		controls_.push_back(new DragDropButton(touch.touchTriangleButton, "Triangle button", roundImage, ImageID("I_TRIANGLE"), bounds));
+	if (touch.bShowTouchSquare)
+		controls_.push_back(new DragDropButton(touch.touchSquareButton, "Square button", roundImage, ImageID("I_SQUARE"), bounds));
 
 	ImageID rectImage = g_Config.iTouchButtonStyle ? ImageID("I_RECT_LINE") : ImageID("I_RECT");
-	ImageID roundImage = g_Config.iTouchButtonStyle ? ImageID("I_ROUND_LINE") : ImageID("I_ROUND");
 	ImageID shoulderImage = g_Config.iTouchButtonStyle ? ImageID("I_SHOULDER_LINE") : ImageID("I_SHOULDER");
 	ImageID stickImage = g_Config.iTouchButtonStyle ? ImageID("I_STICK_LINE") : ImageID("I_STICK");
 	ImageID stickBg = g_Config.iTouchButtonStyle ? ImageID("I_STICK_BG_LINE") : ImageID("I_STICK_BG");
