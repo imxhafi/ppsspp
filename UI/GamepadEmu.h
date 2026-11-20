@@ -72,6 +72,7 @@ public:
 
 	bool CanGlide() const;
 	void SetMinimumAlpha(float minAlpha) { minimumAlpha_ = minAlpha; }
+	void SetOpacity(float opacity) { buttonOpacity_ = std::clamp(opacity, 0.0f, 1.0f); }
 
 protected:
 	uint32_t pointerDownMask_ = 0;
@@ -85,6 +86,7 @@ private:
 	float angle_ = 0.0f;
 	bool flipImageH_ = false;
 	float minimumAlpha_ = 0.0f;
+	float buttonOpacity_ = 1.0f;
 };
 
 class BoolButton : public MultiTouchButton {
