@@ -178,7 +178,7 @@ bool MultiTouchButton::Touch(const TouchInput &input) {
 }
 
 void MultiTouchButton::Draw(UIContext &dc) {
-	float opacity = std::max(g_gamepadOpacity, minimumAlpha_);
+	float opacity = std::max(g_gamepadOpacity, minimumAlpha_) * buttonOpacity_;
 	if (opacity <= 0.0f)
 		return;
 
@@ -1047,13 +1047,17 @@ GamepadEmuView::GamepadEmuView(const TouchControlConfig &config, float xres, flo
 
 	auto addPSPButton = [this, buttonLayoutParams](int buttonBit, const char *key, ImageID bgImg, ImageID bgDownImg, ImageID img, const ConfigTouchPos &touch, ButtonOffset off = { 0, 0 }) -> PSPButton * {
 		if (touch.show) {
-			return Add(new PSPButton(buttonBit, key, bgImg, bgDownImg, img, touch.scale, buttonLayoutParams(touch, off)));
+			auto button = Add(new PSPButton(buttonBit, key, bgImg, bgDownImg, img, touch.scale, buttonLayoutParams(touch, off)));
+			button->SetOpacity(touch.opacity);
+			return button;
 		}
 		return nullptr;
 	};
 	auto addBoolButton = [this, buttonLayoutParams](bool *value, const char *key, ImageID bgImg, ImageID bgDownImg, ImageID img, const ConfigTouchPos &touch) -> BoolButton * {
 		if (touch.show) {
-			return Add(new BoolButton(value, key, bgImg, bgDownImg, img, touch.scale, buttonLayoutParams(touch)));
+			auto button = Add(new BoolButton(value, key, bgImg, bgDownImg, img, touch.scale, buttonLayoutParams(touch)));
+			button->SetOpacity(touch.opacity);
+			return button;
 		}
 		return nullptr;
 	};
@@ -1067,6 +1071,7 @@ GamepadEmuView::GamepadEmuView(const TouchControlConfig &config, float xres, flo
 			auto aux = Add(new CustomButton(cfg.key, key, cfg.toggle, cfg.repeat, controlMapper,
 					g_Config.iTouchButtonStyle == 0 ? customKeyShapes[cfg.shape].i : customKeyShapes[cfg.shape].l, customKeyShapes[cfg.shape].i,
 					customKeyImages[cfg.image].i, touch.scale, customKeyShapes[cfg.shape].d, buttonLayoutParams(touch)));
+			aux->SetOpacity(touch.opacity);
 			aux->SetAngle(customKeyImages[cfg.image].r, customKeyShapes[cfg.shape].r);
 			aux->FlipImageH(customKeyShapes[cfg.shape].f);
 			return aux;
