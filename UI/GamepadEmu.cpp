@@ -178,7 +178,7 @@ bool MultiTouchButton::Touch(const TouchInput &input) {
 }
 
 void MultiTouchButton::Draw(UIContext &dc) {
-	float opacity = std::max(g_gamepadOpacity, minimumAlpha_) * buttonOpacity_;
+	float opacity = std::max(g_gamepadOpacity, minimumAlpha_) * GetOpacity();
 	if (opacity <= 0.0f)
 		return;
 
@@ -455,7 +455,7 @@ void PSPDpad::ProcessTouch(float x, float y, bool down, bool ignorePress) {
 }
 
 void PSPDpad::Draw(UIContext &dc) {
-	float opacity = g_gamepadOpacity;
+	float opacity = g_gamepadOpacity * GetOpacity();
 	if (opacity <= 0.0f)
 		return;
 	// from control mapper.cpp
@@ -1117,17 +1117,21 @@ GamepadEmuView::GamepadEmuView(const TouchControlConfig &config, float xres, flo
 
 	if (config.touchDpad.show) {
 		const ImageID dirImage = g_Config.iTouchButtonStyle ? ImageID("I_DIR_LINE") : ImageID("I_DIR");
-		Add(new PSPDpad(dirImage, "D-pad", ImageID("I_DIR"), ImageID("I_ARROW"), config.touchDpad.scale, config.fDpadSpacing, buttonLayoutParams(config.touchDpad)));
+		auto dpad = Add(new PSPDpad(dirImage, "D-pad", ImageID("I_DIR"), ImageID("I_ARROW"), config.touchDpad.scale, config.fDpadSpacing, buttonLayoutParams(config.touchDpad)));
+		dpad->SetOpacity(config.touchDpad.opacity);
 	}
 
 	if (config.touchAnalogStick.show)
-		Add(new PSPStick(stickBg, "Left analog stick", stickImage, ImageID("I_STICK"), 0, config.touchAnalogStick.scale, buttonLayoutParams(config.touchAnalogStick)));
+		auto stick = Add(new PSPStick(stickBg, "Left analog stick", stickImage, ImageID("I_STICK"), 0, config.touchAnalogStick.scale, buttonLayoutParams(config.touchAnalogStick)));
+		stick->SetOpacity(config.touchAnalogStick.opacity);
 
 	if (config.touchRightAnalogStick.show) {
 		if (g_Config.bRightAnalogCustom)
-			Add(new PSPCustomStick(stickBg, "Right analog stick", stickImage, ImageID("I_STICK"), 1, config.touchRightAnalogStick.scale, buttonLayoutParams(config.touchRightAnalogStick)));
+			auto stick = Add(new PSPCustomStick(stickBg, "Right analog stick", stickImage, ImageID("I_STICK"), 1, config.touchRightAnalogStick.scale, buttonLayoutParams(config.touchRightAnalogStick)));
+			stick->SetOpacity(config.touchRightAnalogStick.opacity);
 		else
-			Add(new PSPStick(stickBg, "Right analog stick", stickImage, ImageID("I_STICK"), 1, config.touchRightAnalogStick.scale, buttonLayoutParams(config.touchRightAnalogStick)));
+			auto stick = Add(new PSPStick(stickBg, "Right analog stick", stickImage, ImageID("I_STICK"), 1, config.touchRightAnalogStick.scale, buttonLayoutParams(config.touchRightAnalogStick)));
+			stick->SetOpacity(config.touchRightAnalogStick.opacity);
 	}
 
 	// Sanitize custom button images, while adding them.
