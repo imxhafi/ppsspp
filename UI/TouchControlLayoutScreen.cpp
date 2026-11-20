@@ -46,7 +46,7 @@ class DragDropButton : public MultiTouchButton {
 public:
 	DragDropButton(ConfigTouchPos &pos, const char *key, ImageID bgImg, ImageID img, const Bounds &screenBounds)
 	: MultiTouchButton(key, bgImg, bgImg, img, pos.scale, new UI::AnchorLayoutParams(pos.x * screenBounds.w, pos.y * screenBounds.h, UI::NONE, UI::NONE, UI::Centering::Both)),
-		x_(pos.x), y_(pos.y), theScale_(pos.scale), screenBounds_(screenBounds) {
+		x_(pos.x), y_(pos.y), theScale_(pos.scale), theOpacity_(pos.opacity), screenBounds_(screenBounds) {
 		scale_ = theScale_;
 	}
 
@@ -58,6 +58,7 @@ public:
 	};
 
 	void Draw(UIContext &dc) override {
+		SetOpacity(theOpacity_);
 		scale_ = theScale_*layoutAreaScale; // Scale down just for rendering
 		MultiTouchButton::Draw(dc);
 		scale_ = theScale_/layoutAreaScale; // is this is needed?
@@ -70,7 +71,9 @@ public:
 	}
 
 	virtual float GetScale() const { return theScale_; }
+	virtual float GetOpacity() const { return theOpacity_; }
 	virtual void SetScale(float s) { theScale_ = s; scale_ = s; }
+	virtual void SetOpacity(float opacity) { theOpacity_ = opacity; }
 
 	virtual float GetSpacing() const { return 1.0f; }
 	virtual void SetSpacing(float s) { }
@@ -88,6 +91,7 @@ protected:
 	const Bounds &screenBounds_;
 	float &theScale_;
 	float &x_, &y_;
+	float &theOpacity_;
 };
 
 class PSPActionButtons : public DragDropButton {
@@ -377,6 +381,7 @@ private:
 	float startDragY_ = -1.0f;
 	float startScale_ = -1.0f;
 	float startSpacing_ = -1.0f;
+	float startOpacity_ = 1.0f;
 
 	DeviceOrientation deviceOrientation_;
 };
@@ -415,6 +420,9 @@ bool ControlLayoutView::Touch(const TouchInput &touch) {
 
 			newPos = ClampTo(newPos, validRange);
 			pickedControl_->ReplaceLayoutParams(new AnchorLayoutParams(newPos.x, newPos.y, NONE, NONE, Centering::Both));
+		} else if (mode_ == 2) {
+			float diffY = -(touch.y - startDragY_);
+			pickedControl_->SetOpacity(clamp_value(startOpacity_ + diffY * 0.01f, 0.0f, 1.0f));
 		} else if (mode_ == 1) {
 			// Resize. Vertical = scaling, horizontal = spacing;
 			// Up should be bigger so let's negate in that direction
@@ -448,6 +456,7 @@ bool ControlLayoutView::Touch(const TouchInput &touch) {
 
 			startSpacing_ = pickedControl_->GetSpacing();
 			startScale_ = pickedControl_->GetScale();
+			startOpacity_ = pickedControl_->GetOpacity();
 		}
 	}
 	if ((touch.flags & TouchInputFlags::UP) && pickedControl_ != 0) {
@@ -659,6 +668,7 @@ void TouchControlLayoutScreen::CreateViews() {
 	mode_ = new ChoiceStrip(ORIENT_VERTICAL);
 	mode_->AddChoice(di->T("Move"), ImageID("I_MOVE"));
 	mode_->AddChoice(di->T("Resize"), ImageID("I_RESIZE"));
+	mode_->AddChoice(co->T("Opacity"), ImageID("I_GEAR"));
 	mode_->SetSelection(0, false);
 	mode_->OnChoice.Add([this](UI::EventParams &e) {
 		int mode = mode_->GetSelection();
