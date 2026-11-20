@@ -72,7 +72,7 @@ public:
 
 	bool CanGlide() const;
 	void SetMinimumAlpha(float minAlpha) { minimumAlpha_ = minAlpha; }
-	void SetOpacity(float opacity) { buttonOpacity_ = std::clamp(opacity, 0.0f, 1.0f); }
+	void SetOpacity(float opacity) { buttonOpacity_ = opacity < 0.0f ? 0.0f : (opacity > 1.0f ? 1.0f : opacity); }
 
 protected:
 	uint32_t pointerDownMask_ = 0;
