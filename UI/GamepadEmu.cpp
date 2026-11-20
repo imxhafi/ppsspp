@@ -889,6 +889,11 @@ void InitPadLayout(TouchControlConfig *config, DeviceOrientation orientation, fl
 		Action_button_center_Y -= 120 * scale;
 	}
 	initTouchPos(&config->touchActionButtonCenter, Action_button_center_X, Action_button_center_Y);
+	// Initialize independent button positions from the legacy shared layout on first run.
+	initTouchPos(&config->touchCircleButton, Action_button_center_X + Action_button_spacing, Action_button_center_Y);
+	initTouchPos(&config->touchCrossButton, Action_button_center_X, Action_button_center_Y + Action_button_spacing);
+	initTouchPos(&config->touchTriangleButton, Action_button_center_X, Action_button_center_Y - Action_button_spacing);
+	initTouchPos(&config->touchSquareButton, Action_button_center_X - Action_button_spacing, Action_button_center_Y);
 
 	//D-PAD (up down left right) (aka PSP cross)----------------------------
 	//radius to the D-pad
@@ -1089,13 +1094,13 @@ GamepadEmuView::GamepadEmuView(const TouchControlConfig &config, float xres, flo
 
 	// touchActionButtonCenter.show will always be true, since that's the default.
 	if (config.bShowTouchCircle)
-		addPSPButton(CTRL_CIRCLE, "Circle button", roundImage, ImageID("I_ROUND"), ImageID("I_CIRCLE"), config.touchActionButtonCenter, circleOffset);
+		addPSPButton(CTRL_CIRCLE, "Circle button", roundImage, ImageID("I_ROUND"), ImageID("I_CIRCLE"), config.touchCircleButton);
 	if (config.bShowTouchCross)
-		addPSPButton(CTRL_CROSS, "Cross button", roundImage, ImageID("I_ROUND"), ImageID("I_CROSS"), config.touchActionButtonCenter, crossOffset);
+		addPSPButton(CTRL_CROSS, "Cross button", roundImage, ImageID("I_ROUND"), ImageID("I_CROSS"), config.touchCrossButton);
 	if (config.bShowTouchTriangle)
-		addPSPButton(CTRL_TRIANGLE, "Triangle button", roundImage, ImageID("I_ROUND"), ImageID("I_TRIANGLE"), config.touchActionButtonCenter, triangleOffset);
+		addPSPButton(CTRL_TRIANGLE, "Triangle button", roundImage, ImageID("I_ROUND"), ImageID("I_TRIANGLE"), config.touchTriangleButton);
 	if (config.bShowTouchSquare)
-		addPSPButton(CTRL_SQUARE, "Square button", roundImage, ImageID("I_ROUND"), ImageID("I_SQUARE"), config.touchActionButtonCenter, squareOffset);
+		addPSPButton(CTRL_SQUARE, "Square button", roundImage, ImageID("I_ROUND"), ImageID("I_SQUARE"), config.touchSquareButton);
 
 	addPSPButton(CTRL_START, "Start button", rectImage, ImageID("I_RECT"), ImageID("I_START"), config.touchStartKey);
 	addPSPButton(CTRL_SELECT, "Select button", rectImage, ImageID("I_RECT"), ImageID("I_SELECT"), config.touchSelectKey);
