@@ -458,8 +458,9 @@ bool ControlLayoutView::Touch(const TouchInput &touch) {
 }
 
 void ControlLayoutView::Draw(UIContext& dc) {
+	// Match the editor preview to the actual in-game opacity, including fully hidden controls.
 	float opacity = g_Config.iTouchButtonOpacity / 100.0f;
-	GamepadUpdateOpacity(std::max(0.5f, opacity));
+	GamepadUpdateOpacity(opacity);
 	using namespace UI;
 	dc.FillRect(Drawable(0x80000000), bounds_);
 	dc.Flush();
@@ -671,6 +672,8 @@ void TouchControlLayoutScreen::CreateViews() {
 	leftColumn->Add(new Choice(co->T("Customize")))->OnClick.Add([this](UI::EventParams &e) {
 		screenManager()->push(new TouchControlVisibilityScreen(gamePath_));
 	});
+
+	leftColumn->Add(new PopupSliderChoice(&g_Config.iTouchButtonOpacity, 0, 100, 10, co->T("Opacity"), screenManager(), "%"));
 
 	ChoiceGroup *gridControls = leftColumn->Add(new ChoiceGroup());
 	CheckBox *snap = gridControls->Add(new CheckBox(&g_Config.bTouchSnapToGrid, di->T("Snap")));
