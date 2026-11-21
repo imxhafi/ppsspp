@@ -167,6 +167,8 @@ struct GestureControlConfig : public ConfigBlock {
 	float fSwipeSensitivity = 1.0f;
 	float fSwipeSmoothing = 0.5f;
 	int iDoubleTapGesture = 0;
+	int iTapGesture = 0;
+	int iLongPressGesture = 0;
 	int iAnalogGesture = (int)AnalogGestureStick::OFF;
 	float fAnalogGestureSensitivity = 1.0f;
 
