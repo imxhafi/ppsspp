@@ -269,6 +269,20 @@ void GestureMappingScreen::CreateGestureTab(UI::LinearLayout *vert, int zoneInde
 	ChoiceGroup *doubleTapGroup = list->Add(new ChoiceGroup(co->T("Double tap")));
 	doubleTapGroup->Add(new PopupMultiChoice(&zone.iDoubleTapGesture, mc->T("Double tap button"), gestureButton, 0, ARRAY_SIZE(gestureButton), I18NCat::MAPPABLECONTROLS, screenManager()));
 
+	ChoiceGroup *tapGroup = list->Add(new ChoiceGroup(co->T("Tap and press")));
+	tapGroup->Add(new PopupMultiChoice(&zone.iTapGesture, co->T("Single tap button"), gestureButton, 0, ARRAY_SIZE(gestureButton), I18NCat::MAPPABLECONTROLS, screenManager()))->SetEnabledPtr(&zone.bGestureControlEnabled);
+	tapGroup->Add(new PopupMultiChoice(&zone.iLongPressGesture, co->T("Long press button"), gestureButton, 0, ARRAY_SIZE(gestureButton), I18NCat::MAPPABLECONTROLS, screenManager()))->SetEnabledPtr(&zone.bGestureControlEnabled);
+	tapGroup->Add(new PopupMultiChoice(&zone.iTwoFingerTapGesture, co->T("Two-finger tap button"), gestureButton, 0, ARRAY_SIZE(gestureButton), I18NCat::MAPPABLECONTROLS, screenManager()))->SetEnabledPtr(&zone.bGestureControlEnabled);
+
+	ChoiceGroup *pinchGroup = list->Add(new ChoiceGroup(co->T("Pinch")));
+	pinchGroup->Add(new PopupMultiChoice(&zone.iPinchInGesture, co->T("Pinch in button"), gestureButton, 0, ARRAY_SIZE(gestureButton), I18NCat::MAPPABLECONTROLS, screenManager()))->SetEnabledPtr(&zone.bGestureControlEnabled);
+	pinchGroup->Add(new PopupMultiChoice(&zone.iPinchOutGesture, co->T("Pinch out button"), gestureButton, 0, ARRAY_SIZE(gestureButton), I18NCat::MAPPABLECONTROLS, screenManager()))->SetEnabledPtr(&zone.bGestureControlEnabled);
+
+	ChoiceGroup *motionGroup = list->Add(new ChoiceGroup(co->T("Motion gestures")));
+	motionGroup->Add(new PopupMultiChoice(&zone.iShakeGesture, co->T("Shake button"), gestureButton, 0, ARRAY_SIZE(gestureButton), I18NCat::MAPPABLECONTROLS, screenManager()))->SetEnabledPtr(&zone.bGestureControlEnabled);
+	motionGroup->Add(new PopupMultiChoice(&zone.iTwistGesture, co->T("Twist button"), gestureButton, 0, ARRAY_SIZE(gestureButton), I18NCat::MAPPABLECONTROLS, screenManager()))->SetEnabledPtr(&zone.bGestureControlEnabled);
+	motionGroup->Add(new PopupMultiChoice(&zone.iFlipGesture, co->T("Flip button"), gestureButton, 0, ARRAY_SIZE(gestureButton), I18NCat::MAPPABLECONTROLS, screenManager()))->SetEnabledPtr(&zone.bGestureControlEnabled);
+
 	ChoiceGroup *analogGroup = list->Add(new ChoiceGroup(co->T("Analog Stick")));
 	static const char *analogGestureSticks[] = { "Off", "Left stick", "Right stick" };
 	analogGroup->Add(new PopupMultiChoice(&zone.iAnalogGesture, co->T("Analog stick gesture"), analogGestureSticks, 0, ARRAY_SIZE(analogGestureSticks), I18NCat::CONTROLS, screenManager()));
