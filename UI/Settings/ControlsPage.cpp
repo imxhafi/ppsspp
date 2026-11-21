@@ -64,6 +64,12 @@ public:
 		addMapping(&gesture.iTapGesture, "Single tap");
 		addMapping(&gesture.iDoubleTapGesture, "Double tap");
 		addMapping(&gesture.iLongPressGesture, "Long press");
+		addMapping(&gesture.iTwoFingerTapGesture, "Two-finger tap");
+		addMapping(&gesture.iPinchInGesture, "Pinch in");
+		addMapping(&gesture.iPinchOutGesture, "Pinch out");
+		addMapping(&gesture.iShakeGesture, "Phone shake");
+		addMapping(&gesture.iTwistGesture, "Phone twist");
+		addMapping(&gesture.iFlipGesture, "Phone flip");
 		addMapping(&gesture.iSwipeUp, "Swipe up");
 		addMapping(&gesture.iSwipeDown, "Swipe down");
 		addMapping(&gesture.iSwipeLeft, "Swipe left");
