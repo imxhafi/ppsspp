@@ -1,4 +1,9 @@
 name: Manual Generate Android APK
+
+# Keep only the newest APK build for this branch.
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
 on:
   push:
     branches:
