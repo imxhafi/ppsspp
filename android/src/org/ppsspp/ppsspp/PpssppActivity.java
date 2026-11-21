@@ -108,6 +108,10 @@ public class PpssppActivity extends AppCompatActivity implements SensorEventList
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
 	private Sensor mGyroscope;
+	private long lastShakeGestureNs;
+	private long lastTwistGestureNs;
+	private long lastFlipGestureNs;
+	private float previousAccelZ;
 
 	private String shortcutParam = "";
 	private static String overrideShortcutParam = null;
@@ -1298,12 +1302,38 @@ public class PpssppActivity extends AppCompatActivity implements SensorEventList
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		switch (event.sensor.getType()) {
-		case Sensor.TYPE_ACCELEROMETER:
-			NativeApp.accelerometer(event.values[0], event.values[1], event.values[2]);
+		case Sensor.TYPE_ACCELEROMETER: {
+			float x = event.values[0];
+			float y = event.values[1];
+			float z = event.values[2];
+			NativeApp.accelerometer(x, y, z);
+
+			float magnitude = (float)Math.sqrt(x * x + y * y + z * z);
+			if (magnitude > 21.0f && event.timestamp - lastShakeGestureNs > 900000000L) {
+				lastShakeGestureNs = event.timestamp;
+				NativeApp.fireMotionGesture("ShakeGesture");
+			}
+			if ((previousAccelZ > 7.0f && z < -7.0f) || (previousAccelZ < -7.0f && z > 7.0f)) {
+				if (event.timestamp - lastFlipGestureNs > 1200000000L) {
+					lastFlipGestureNs = event.timestamp;
+					NativeApp.fireMotionGesture("FlipGesture");
+				}
+			}
+			previousAccelZ = z;
 			break;
-		case Sensor.TYPE_GYROSCOPE:
-			NativeApp.gyroscope(event.values[0], event.values[1], event.values[2], event.timestamp);
+		}
+		case Sensor.TYPE_GYROSCOPE: {
+			float x = event.values[0];
+			float y = event.values[1];
+			float z = event.values[2];
+			NativeApp.gyroscope(x, y, z, event.timestamp);
+			float magnitude = (float)Math.sqrt(x * x + y * y + z * z);
+			if (magnitude > 3.0f && event.timestamp - lastTwistGestureNs > 900000000L) {
+				lastTwistGestureNs = event.timestamp;
+				NativeApp.fireMotionGesture("TwistGesture");
+			}
 			break;
+		}
 		}
 	}
 

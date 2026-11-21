@@ -896,6 +896,14 @@ static constexpr ConfigSetting gestureControlSettings[] = {
 	ConfigSetting("SwipeSensitivity", SETTING(g_Config.gestureControls[0], fSwipeSensitivity), 1.0f, CfgFlag::PER_GAME),
 	ConfigSetting("SwipeSmoothing", SETTING(g_Config.gestureControls[0], fSwipeSmoothing), 0.3f, CfgFlag::PER_GAME),
 	ConfigSetting("DoubleTapGesture", SETTING(g_Config.gestureControls[0], iDoubleTapGesture), 0, CfgFlag::PER_GAME),
+	ConfigSetting("TapGesture", SETTING(g_Config.gestureControls[0], iTapGesture), 0, CfgFlag::PER_GAME),
+	ConfigSetting("LongPressGesture", SETTING(g_Config.gestureControls[0], iLongPressGesture), 0, CfgFlag::PER_GAME),
+	ConfigSetting("TwoFingerTapGesture", SETTING(g_Config.gestureControls[0], iTwoFingerTapGesture), 0, CfgFlag::PER_GAME),
+	ConfigSetting("PinchInGesture", SETTING(g_Config.gestureControls[0], iPinchInGesture), 0, CfgFlag::PER_GAME),
+	ConfigSetting("PinchOutGesture", SETTING(g_Config.gestureControls[0], iPinchOutGesture), 0, CfgFlag::PER_GAME),
+	ConfigSetting("ShakeGesture", SETTING(g_Config.gestureControls[0], iShakeGesture), 0, CfgFlag::PER_GAME),
+	ConfigSetting("TwistGesture", SETTING(g_Config.gestureControls[0], iTwistGesture), 0, CfgFlag::PER_GAME),
+	ConfigSetting("FlipGesture", SETTING(g_Config.gestureControls[0], iFlipGesture), 0, CfgFlag::PER_GAME),
 	ConfigSetting("GestureControlEnabled", SETTING(g_Config.gestureControls[0], bGestureControlEnabled), false, CfgFlag::PER_GAME),
 	ConfigSetting("AnalogGesture", SETTING(g_Config.gestureControls[0], iAnalogGesture), (int)AnalogGestureStick::OFF, &AnalogGestureToString, &AnalogGestureFromString, CfgFlag::PER_GAME),
 	ConfigSetting("AnalogGestureSensibility", SETTING(g_Config.gestureControls[0], fAnalogGestureSensitivity), 1.0f, CfgFlag::PER_GAME),
@@ -1222,6 +1230,10 @@ void TouchControlConfig::ResetLayout() {
 		pos->scale = defaultTouchPosShow.scale;
 	};
 	reset(&touchActionButtonCenter);
+	reset(&touchCircleButton);
+	reset(&touchCrossButton);
+	reset(&touchTriangleButton);
+	reset(&touchSquareButton);
 	fActionButtonSpacing = 1.0f;
 	reset(&touchDpad);
 	fDpadSpacing = 1.0f;
@@ -1297,6 +1309,46 @@ static constexpr ConfigSetting touchControlSettings[] = {
 	// -1.0f means uninitialized, set in GamepadEmu::CreatePadLayout().
 	ConfigSetting("ActionButtonSpacing2", SETTING(g_Config.touchControlsLandscape, fActionButtonSpacing), 1.0f, CfgFlag::PER_GAME),
 	ConfigSetting("ActionButtonCenterX", "ActionButtonCenterY", "ActionButtonScale", nullptr, SETTING(g_Config.touchControlsLandscape, touchActionButtonCenter), defaultTouchPosShow, CfgFlag::PER_GAME),
+	ConfigSetting("ActionButtonOpacity", SETTING(g_Config.touchControlsLandscape, touchActionButtonCenter.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("CircleButtonX", "CircleButtonY", "CircleButtonScale", nullptr, SETTING(g_Config.touchControlsLandscape, touchCircleButton), defaultTouchPosShow, CfgFlag::PER_GAME),
+	ConfigSetting("CrossButtonX", "CrossButtonY", "CrossButtonScale", nullptr, SETTING(g_Config.touchControlsLandscape, touchCrossButton), defaultTouchPosShow, CfgFlag::PER_GAME),
+	ConfigSetting("TriangleButtonX", "TriangleButtonY", "TriangleButtonScale", nullptr, SETTING(g_Config.touchControlsLandscape, touchTriangleButton), defaultTouchPosShow, CfgFlag::PER_GAME),
+	ConfigSetting("SquareButtonX", "SquareButtonY", "SquareButtonScale", nullptr, SETTING(g_Config.touchControlsLandscape, touchSquareButton), defaultTouchPosShow, CfgFlag::PER_GAME),
+	ConfigSetting("CircleButtonOpacity", SETTING(g_Config.touchControlsLandscape, touchCircleButton.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("CrossButtonOpacity", SETTING(g_Config.touchControlsLandscape, touchCrossButton.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("TriangleButtonOpacity", SETTING(g_Config.touchControlsLandscape, touchTriangleButton.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("SquareButtonOpacity", SETTING(g_Config.touchControlsLandscape, touchSquareButton.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("DPadOpacity", SETTING(g_Config.touchControlsLandscape, touchDpad.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("StartKeyOpacity", SETTING(g_Config.touchControlsLandscape, touchStartKey.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("SelectKeyOpacity", SETTING(g_Config.touchControlsLandscape, touchSelectKey.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("HomeKeyOpacity", SETTING(g_Config.touchControlsLandscape, touchHomeKey.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("UnthrottleKeyOpacity", SETTING(g_Config.touchControlsLandscape, touchFastForwardKey.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("LKeyOpacity", SETTING(g_Config.touchControlsLandscape, touchLKey.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("RKeyOpacity", SETTING(g_Config.touchControlsLandscape, touchRKey.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("PauseKeyOpacity", SETTING(g_Config.touchControlsLandscape, touchPauseKey.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("AnalogStickOpacity", SETTING(g_Config.touchControlsLandscape, touchAnalogStick.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("RightAnalogStickOpacity", SETTING(g_Config.touchControlsLandscape, touchRightAnalogStick.opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo0Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[0].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo1Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[1].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo2Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[2].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo3Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[3].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo4Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[4].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo5Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[5].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo6Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[6].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo7Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[7].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo8Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[8].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo9Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[9].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo10Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[10].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo11Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[11].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo12Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[12].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo13Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[13].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo14Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[14].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo15Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[15].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo16Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[16].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo17Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[17].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo18Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[18].opacity), 1.0f, CfgFlag::PER_GAME),
+	ConfigSetting("Combo19Opacity", SETTING(g_Config.touchControlsLandscape, touchCustom[19].opacity), 1.0f, CfgFlag::PER_GAME),
+
 	ConfigSetting("DPadX", "DPadY", "DPadScale", "ShowTouchDpad", SETTING(g_Config.touchControlsLandscape, touchDpad), defaultTouchPosShow, CfgFlag::PER_GAME),
 
 	// Note: these will be overwritten if DPadRadius is set.

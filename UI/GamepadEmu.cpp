@@ -178,7 +178,7 @@ bool MultiTouchButton::Touch(const TouchInput &input) {
 }
 
 void MultiTouchButton::Draw(UIContext &dc) {
-	float opacity = std::max(g_gamepadOpacity, minimumAlpha_);
+	float opacity = std::max(g_gamepadOpacity, minimumAlpha_) * GetOpacity();
 	if (opacity <= 0.0f)
 		return;
 
@@ -455,7 +455,7 @@ void PSPDpad::ProcessTouch(float x, float y, bool down, bool ignorePress) {
 }
 
 void PSPDpad::Draw(UIContext &dc) {
-	float opacity = g_gamepadOpacity;
+	float opacity = g_gamepadOpacity * GetOpacity();
 	if (opacity <= 0.0f)
 		return;
 	// from control mapper.cpp
@@ -518,7 +518,7 @@ void PSPStick::GetContentDimensions(const UIContext &dc, float &w, float &h) con
 }
 
 void PSPStick::Draw(UIContext &dc) {
-	float opacity = g_gamepadOpacity;
+	float opacity = g_gamepadOpacity * GetOpacity();
 	if (opacity <= 0.0f)
 		return;
 
@@ -636,7 +636,7 @@ PSPCustomStick::PSPCustomStick(ImageID bgImg, const char *key, ImageID stickImg,
 }
 
 void PSPCustomStick::Draw(UIContext &dc) {
-	float opacity = g_gamepadOpacity;
+	float opacity = g_gamepadOpacity * GetOpacity();
 	if (opacity <= 0.0f)
 		return;
 
@@ -889,6 +889,13 @@ void InitPadLayout(TouchControlConfig *config, DeviceOrientation orientation, fl
 		Action_button_center_Y -= 120 * scale;
 	}
 	initTouchPos(&config->touchActionButtonCenter, Action_button_center_X, Action_button_center_Y);
+	// Initialize independent button positions from the legacy shared layout on first run.
+	const float legacyActionCenterX = config->touchActionButtonCenter.x * xres;
+	const float legacyActionCenterY = config->touchActionButtonCenter.y * yres;
+	initTouchPos(&config->touchCircleButton, legacyActionCenterX + Action_button_spacing, legacyActionCenterY);
+	initTouchPos(&config->touchCrossButton, legacyActionCenterX, legacyActionCenterY + Action_button_spacing);
+	initTouchPos(&config->touchTriangleButton, legacyActionCenterX, legacyActionCenterY - Action_button_spacing);
+	initTouchPos(&config->touchSquareButton, legacyActionCenterX - Action_button_spacing, legacyActionCenterY);
 
 	//D-PAD (up down left right) (aka PSP cross)----------------------------
 	//radius to the D-pad
@@ -1047,13 +1054,17 @@ GamepadEmuView::GamepadEmuView(const TouchControlConfig &config, float xres, flo
 
 	auto addPSPButton = [this, buttonLayoutParams](int buttonBit, const char *key, ImageID bgImg, ImageID bgDownImg, ImageID img, const ConfigTouchPos &touch, ButtonOffset off = { 0, 0 }) -> PSPButton * {
 		if (touch.show) {
-			return Add(new PSPButton(buttonBit, key, bgImg, bgDownImg, img, touch.scale, buttonLayoutParams(touch, off)));
+			auto button = Add(new PSPButton(buttonBit, key, bgImg, bgDownImg, img, touch.scale, buttonLayoutParams(touch, off)));
+			button->SetOpacity(touch.opacity);
+			return button;
 		}
 		return nullptr;
 	};
 	auto addBoolButton = [this, buttonLayoutParams](bool *value, const char *key, ImageID bgImg, ImageID bgDownImg, ImageID img, const ConfigTouchPos &touch) -> BoolButton * {
 		if (touch.show) {
-			return Add(new BoolButton(value, key, bgImg, bgDownImg, img, touch.scale, buttonLayoutParams(touch)));
+			auto button = Add(new BoolButton(value, key, bgImg, bgDownImg, img, touch.scale, buttonLayoutParams(touch)));
+			button->SetOpacity(touch.opacity);
+			return button;
 		}
 		return nullptr;
 	};
@@ -1067,6 +1078,7 @@ GamepadEmuView::GamepadEmuView(const TouchControlConfig &config, float xres, flo
 			auto aux = Add(new CustomButton(cfg.key, key, cfg.toggle, cfg.repeat, controlMapper,
 					g_Config.iTouchButtonStyle == 0 ? customKeyShapes[cfg.shape].i : customKeyShapes[cfg.shape].l, customKeyShapes[cfg.shape].i,
 					customKeyImages[cfg.image].i, touch.scale, customKeyShapes[cfg.shape].d, buttonLayoutParams(touch)));
+			aux->SetOpacity(touch.opacity);
 			aux->SetAngle(customKeyImages[cfg.image].r, customKeyShapes[cfg.shape].r);
 			aux->FlipImageH(customKeyShapes[cfg.shape].f);
 			return aux;
@@ -1084,13 +1096,13 @@ GamepadEmuView::GamepadEmuView(const TouchControlConfig &config, float xres, flo
 
 	// touchActionButtonCenter.show will always be true, since that's the default.
 	if (config.bShowTouchCircle)
-		addPSPButton(CTRL_CIRCLE, "Circle button", roundImage, ImageID("I_ROUND"), ImageID("I_CIRCLE"), config.touchActionButtonCenter, circleOffset);
+		addPSPButton(CTRL_CIRCLE, "Circle button", roundImage, ImageID("I_ROUND"), ImageID("I_CIRCLE"), config.touchCircleButton);
 	if (config.bShowTouchCross)
-		addPSPButton(CTRL_CROSS, "Cross button", roundImage, ImageID("I_ROUND"), ImageID("I_CROSS"), config.touchActionButtonCenter, crossOffset);
+		addPSPButton(CTRL_CROSS, "Cross button", roundImage, ImageID("I_ROUND"), ImageID("I_CROSS"), config.touchCrossButton);
 	if (config.bShowTouchTriangle)
-		addPSPButton(CTRL_TRIANGLE, "Triangle button", roundImage, ImageID("I_ROUND"), ImageID("I_TRIANGLE"), config.touchActionButtonCenter, triangleOffset);
+		addPSPButton(CTRL_TRIANGLE, "Triangle button", roundImage, ImageID("I_ROUND"), ImageID("I_TRIANGLE"), config.touchTriangleButton);
 	if (config.bShowTouchSquare)
-		addPSPButton(CTRL_SQUARE, "Square button", roundImage, ImageID("I_ROUND"), ImageID("I_SQUARE"), config.touchActionButtonCenter, squareOffset);
+		addPSPButton(CTRL_SQUARE, "Square button", roundImage, ImageID("I_ROUND"), ImageID("I_SQUARE"), config.touchSquareButton);
 
 	addPSPButton(CTRL_START, "Start button", rectImage, ImageID("I_RECT"), ImageID("I_START"), config.touchStartKey);
 	addPSPButton(CTRL_SELECT, "Select button", rectImage, ImageID("I_RECT"), ImageID("I_SELECT"), config.touchSelectKey);
@@ -1112,17 +1124,23 @@ GamepadEmuView::GamepadEmuView(const TouchControlConfig &config, float xres, flo
 
 	if (config.touchDpad.show) {
 		const ImageID dirImage = g_Config.iTouchButtonStyle ? ImageID("I_DIR_LINE") : ImageID("I_DIR");
-		Add(new PSPDpad(dirImage, "D-pad", ImageID("I_DIR"), ImageID("I_ARROW"), config.touchDpad.scale, config.fDpadSpacing, buttonLayoutParams(config.touchDpad)));
+		auto dpad = Add(new PSPDpad(dirImage, "D-pad", ImageID("I_DIR"), ImageID("I_ARROW"), config.touchDpad.scale, config.fDpadSpacing, buttonLayoutParams(config.touchDpad)));
+		dpad->SetOpacity(config.touchDpad.opacity);
 	}
 
-	if (config.touchAnalogStick.show)
-		Add(new PSPStick(stickBg, "Left analog stick", stickImage, ImageID("I_STICK"), 0, config.touchAnalogStick.scale, buttonLayoutParams(config.touchAnalogStick)));
+	if (config.touchAnalogStick.show) {
+		auto stick = Add(new PSPStick(stickBg, "Left analog stick", stickImage, ImageID("I_STICK"), 0, config.touchAnalogStick.scale, buttonLayoutParams(config.touchAnalogStick)));
+		stick->SetOpacity(config.touchAnalogStick.opacity);
+	}
 
 	if (config.touchRightAnalogStick.show) {
-		if (g_Config.bRightAnalogCustom)
-			Add(new PSPCustomStick(stickBg, "Right analog stick", stickImage, ImageID("I_STICK"), 1, config.touchRightAnalogStick.scale, buttonLayoutParams(config.touchRightAnalogStick)));
-		else
-			Add(new PSPStick(stickBg, "Right analog stick", stickImage, ImageID("I_STICK"), 1, config.touchRightAnalogStick.scale, buttonLayoutParams(config.touchRightAnalogStick)));
+		if (g_Config.bRightAnalogCustom) {
+			auto stick = Add(new PSPCustomStick(stickBg, "Right analog stick", stickImage, ImageID("I_STICK"), 1, config.touchRightAnalogStick.scale, buttonLayoutParams(config.touchRightAnalogStick)));
+			stick->SetOpacity(config.touchRightAnalogStick.opacity);
+		} else {
+			auto stick = Add(new PSPStick(stickBg, "Right analog stick", stickImage, ImageID("I_STICK"), 1, config.touchRightAnalogStick.scale, buttonLayoutParams(config.touchRightAnalogStick)));
+			stick->SetOpacity(config.touchRightAnalogStick.opacity);
+		}
 	}
 
 	// Sanitize custom button images, while adding them.

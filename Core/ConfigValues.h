@@ -81,6 +81,8 @@ struct ConfigTouchPos {
 	float scale = 1.0f;
 	// Note: Show is not used for all settings.
 	bool show = true;
+	// Per-control alpha multiplier. Kept separate from global fade/opacity.
+	float opacity = 1.0f;
 };
 
 struct ConfigCustomButton {

@@ -4,6 +4,7 @@ import android.os.Build;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.InputEvent;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
 
@@ -164,8 +165,158 @@ public class NativeApp {
 		}
 	}
 
+
+	// Optional gesture recognition. Events are still forwarded to the normal touch path below,
+	// so the existing PPSSPP on-screen controls continue to receive their original input.
+	private static boolean gestureTracking;
+	private static boolean gestureMultiTouch;
+	private static boolean gesturePinchFired;
+	private static float gestureDownX;
+	private static float gestureDownY;
+	private static float gestureTwoFingerDistance;
+	private static long gestureDownTime;
+	private static long lastGestureTapTime;
+
+	private static int readGestureValue(String key) {
+		try {
+			return Integer.parseInt(queryConfig(key));
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+
+	private static boolean gestureControlEnabled() {
+		String value = queryConfig("GestureControlEnabled");
+		return "1".equals(value) || "true".equalsIgnoreCase(value);
+	}
+
+	private static int gestureKeyCode(int action) {
+		switch (action) {
+		case 1: return KeyEvent.KEYCODE_BUTTON_A;      // Cross
+		case 2: return KeyEvent.KEYCODE_BUTTON_B;      // Circle
+		case 3: return KeyEvent.KEYCODE_BUTTON_X;      // Square
+		case 4: return KeyEvent.KEYCODE_BUTTON_Y;      // Triangle
+		case 5: return KeyEvent.KEYCODE_BUTTON_L1;
+		case 6: return KeyEvent.KEYCODE_BUTTON_R1;
+		case 7: return KeyEvent.KEYCODE_BUTTON_START;
+		case 8: return KeyEvent.KEYCODE_BUTTON_SELECT;
+		default: return 0;
+		}
+	}
+
+	private static void fireGesture(int action) {
+		int key = gestureKeyCode(action);
+		if (key == 0) {
+			return;
+		}
+		keyDown(DEVICE_ID_DEFAULT, key, false);
+		keyUp(DEVICE_ID_DEFAULT, key);
+	}
+
+	public static void fireMotionGesture(String configKey) {
+		if (gestureControlEnabled()) {
+			fireGesture(readGestureValue(configKey));
+		}
+	}
+
+	private static float readGestureFloat(String key, float fallback) {
+		try {
+			return Float.parseFloat(queryConfig(key));
+		} catch (Exception e) {
+			return fallback;
+		}
+	}
+
+	private static float pointerDistance(MotionEvent ev) {
+		if (ev.getPointerCount() < 2) {
+			return 0.0f;
+		}
+		float dx = ev.getX(0) - ev.getX(1);
+		float dy = ev.getY(0) - ev.getY(1);
+		return (float)Math.sqrt(dx * dx + dy * dy);
+	}
+
+	private static void processGestureEvent(MotionEvent ev) {
+		final int action = ev.getActionMasked();
+		if (action == MotionEvent.ACTION_DOWN) {
+			gestureTracking = gestureControlEnabled();
+			gestureMultiTouch = false;
+			gesturePinchFired = false;
+			gestureDownX = ev.getX();
+			gestureDownY = ev.getY();
+			gestureDownTime = ev.getEventTime();
+			return;
+		}
+		if (!gestureTracking) {
+			return;
+		}
+		if (action == MotionEvent.ACTION_CANCEL) {
+			gestureTracking = false;
+			return;
+		}
+		if (action == MotionEvent.ACTION_POINTER_DOWN && ev.getPointerCount() >= 2) {
+			gestureMultiTouch = true;
+			gestureTwoFingerDistance = pointerDistance(ev);
+			return;
+		}
+		if (gestureMultiTouch) {
+			if (action == MotionEvent.ACTION_MOVE && ev.getPointerCount() >= 2 && !gesturePinchFired) {
+				float delta = pointerDistance(ev) - gestureTwoFingerDistance;
+				if (Math.abs(delta) >= 55.0f) {
+					fireGesture(readGestureValue(delta < 0 ? "PinchInGesture" : "PinchOutGesture"));
+					gesturePinchFired = true;
+				}
+				return;
+			}
+			if (action == MotionEvent.ACTION_POINTER_UP && ev.getPointerCount() == 2) {
+				if (!gesturePinchFired && ev.getEventTime() - gestureDownTime <= 500) {
+					fireGesture(readGestureValue("TwoFingerTapGesture"));
+				}
+				gestureTracking = false;
+			}
+			return;
+		}
+		if (ev.getPointerCount() > 1) {
+			gestureMultiTouch = true;
+			return;
+		}
+		if (action != MotionEvent.ACTION_UP) {
+			return;
+		}
+
+		gestureTracking = false;
+		final float dx = ev.getX() - gestureDownX;
+		final float dy = ev.getY() - gestureDownY;
+		final long duration = ev.getEventTime() - gestureDownTime;
+		final float sensitivity = Math.max(0.5f, readGestureFloat("SwipeSensitivity", 1.0f));
+		final float threshold = 90.0f / sensitivity;
+		if (Math.max(Math.abs(dx), Math.abs(dy)) >= threshold) {
+			if (Math.abs(dx) > Math.abs(dy)) {
+				fireGesture(readGestureValue(dx < 0 ? "SwipeLeft" : "SwipeRight"));
+			} else {
+				fireGesture(readGestureValue(dy < 0 ? "SwipeUp" : "SwipeDown"));
+			}
+		} else if (duration >= 500) {
+			fireGesture(readGestureValue("LongPressGesture"));
+		} else {
+			fireGesture(readGestureValue("TapGesture"));
+			if (duration <= 300) {
+				long now = ev.getEventTime();
+				if (now - lastGestureTapTime <= 300) {
+					fireGesture(readGestureValue("DoubleTapGesture"));
+					lastGestureTapTime = 0;
+				} else {
+					lastGestureTapTime = now;
+				}
+			}
+		}
+	}
+
 	// Forwarded from onTouchEvent in the SurfaceView classes.
 	public static void processTouchEvent(final MotionEvent ev) {
+		if (!isFromSource(ev, InputDevice.SOURCE_MOUSE)) {
+			processGestureEvent(ev);
+		}
 		if (isFromSource(ev, InputDevice.SOURCE_MOUSE)) {
 			// This is where workable mouse support arrived.
 			onMouseEventMotion(ev);

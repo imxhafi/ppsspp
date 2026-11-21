@@ -23,15 +23,19 @@
 #include "Common/System/Display.h"
 #include "Common/System/System.h"
 #include "Common/UI/ScreenManager.h"
+#include "Common/UI/PopupScreens.h"
 #include "Common/UI/View.h"
 #include "Core/Config.h"
 #include "Core/ConfigValues.h"
 #include "UI/ControlMappingScreen.h"
 #include "UI/GameSettingsScreen.h"
 #include "UI/SettingsPage.h"
+#include "UI/MiscViews.h"
+#include "UI/SimpleDialogScreen.h"
 #include "UI/Settings/MainSettingsPages.h"
 #include "UI/TiltAnalogSettingsScreen.h"
 #include "UI/TouchControlLayoutScreen.h"
+
 
 void BuildControlsSettings(SettingsPage *page) {
 	using namespace UI;

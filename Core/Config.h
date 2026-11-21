@@ -111,8 +111,13 @@ struct TouchControlConfig : public ConfigBlock {
 			touchCustom[i].show = false;
 		}
 	}
-	// the PSP button's center (triangle, circle, square, cross)
+	// Legacy shared center retained for compatibility with existing configurations.
 	ConfigTouchPos touchActionButtonCenter;
+	// Independent layout settings for each PSP face button.
+	ConfigTouchPos touchCircleButton;
+	ConfigTouchPos touchCrossButton;
+	ConfigTouchPos touchTriangleButton;
+	ConfigTouchPos touchSquareButton;
 	// space between those PSP buttons
 	float fActionButtonSpacing = 1.0f;
 	// the D-pad (PSP cross) position
@@ -162,6 +167,14 @@ struct GestureControlConfig : public ConfigBlock {
 	float fSwipeSensitivity = 1.0f;
 	float fSwipeSmoothing = 0.5f;
 	int iDoubleTapGesture = 0;
+	int iTapGesture = 0;
+	int iLongPressGesture = 0;
+	int iTwoFingerTapGesture = 0;
+	int iPinchInGesture = 0;
+	int iPinchOutGesture = 0;
+	int iShakeGesture = 0;
+	int iTwistGesture = 0;
+	int iFlipGesture = 0;
 	int iAnalogGesture = (int)AnalogGestureStick::OFF;
 	float fAnalogGestureSensitivity = 1.0f;
 

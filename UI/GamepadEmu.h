@@ -48,9 +48,12 @@ public:
 		return false;
 	}
 	bool CanBeFocused() const override { return false; }
+	virtual void SetOpacity(float opacity) { opacity_ = opacity < 0.0f ? 0.0f : (opacity > 1.0f ? 1.0f : opacity); }
+	virtual float GetOpacity() const { return opacity_; }
 
 protected:
 	std::string key_;
+	float opacity_ = 1.0f;
 };
 
 class MultiTouchButton : public GamepadComponent {

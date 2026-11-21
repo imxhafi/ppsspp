@@ -617,6 +617,32 @@ static std::string QueryConfig(std::string_view query) {
 		// Whether the game goes to a second display, see ExternalDisplayPresentation.java. The running backend: the
 		// setting is already the new one while the restart prompt for a change is up.
 		return GetGPUBackend() == GPUBackend::VULKAN && g_Config.iExternalDisplay == (int)ExternalDisplayMode::SHOW_GAME ? "1" : "0";
+	} else if (query == "GestureControlEnabled") {
+		return g_Config.gestureControls[0].bGestureControlEnabled ? "1" : "0";
+	} else if (query == "TapGesture" || query == "DoubleTapGesture" || query == "LongPressGesture" ||
+		query == "TwoFingerTapGesture" || query == "PinchInGesture" || query == "PinchOutGesture" ||
+		query == "ShakeGesture" || query == "TwistGesture" || query == "FlipGesture" ||
+		query == "SwipeUp" || query == "SwipeDown" || query == "SwipeLeft" || query == "SwipeRight") {
+		const GestureControlConfig &gesture = g_Config.gestureControls[0];
+		int value = 0;
+		if (query == "TapGesture") value = gesture.iTapGesture;
+		else if (query == "DoubleTapGesture") value = gesture.iDoubleTapGesture;
+		else if (query == "LongPressGesture") value = gesture.iLongPressGesture;
+		else if (query == "TwoFingerTapGesture") value = gesture.iTwoFingerTapGesture;
+		else if (query == "PinchInGesture") value = gesture.iPinchInGesture;
+		else if (query == "PinchOutGesture") value = gesture.iPinchOutGesture;
+		else if (query == "ShakeGesture") value = gesture.iShakeGesture;
+		else if (query == "TwistGesture") value = gesture.iTwistGesture;
+		else if (query == "FlipGesture") value = gesture.iFlipGesture;
+		else if (query == "SwipeUp") value = gesture.iSwipeUp;
+		else if (query == "SwipeDown") value = gesture.iSwipeDown;
+		else if (query == "SwipeLeft") value = gesture.iSwipeLeft;
+		else if (query == "SwipeRight") value = gesture.iSwipeRight;
+		snprintf(temp, sizeof(temp), "%d", value);
+		return temp;
+	} else if (query == "SwipeSensitivity") {
+		snprintf(temp, sizeof(temp), "%f", g_Config.gestureControls[0].fSwipeSensitivity);
+		return temp;
 	} else {
 		return "";
 	}
