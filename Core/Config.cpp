@@ -896,6 +896,8 @@ static constexpr ConfigSetting gestureControlSettings[] = {
 	ConfigSetting("SwipeSensitivity", SETTING(g_Config.gestureControls[0], fSwipeSensitivity), 1.0f, CfgFlag::PER_GAME),
 	ConfigSetting("SwipeSmoothing", SETTING(g_Config.gestureControls[0], fSwipeSmoothing), 0.3f, CfgFlag::PER_GAME),
 	ConfigSetting("DoubleTapGesture", SETTING(g_Config.gestureControls[0], iDoubleTapGesture), 0, CfgFlag::PER_GAME),
+	ConfigSetting("TapGesture", SETTING(g_Config.gestureControls[0], iTapGesture), 0, CfgFlag::PER_GAME),
+	ConfigSetting("LongPressGesture", SETTING(g_Config.gestureControls[0], iLongPressGesture), 0, CfgFlag::PER_GAME),
 	ConfigSetting("GestureControlEnabled", SETTING(g_Config.gestureControls[0], bGestureControlEnabled), false, CfgFlag::PER_GAME),
 	ConfigSetting("AnalogGesture", SETTING(g_Config.gestureControls[0], iAnalogGesture), (int)AnalogGestureStick::OFF, &AnalogGestureToString, &AnalogGestureFromString, CfgFlag::PER_GAME),
 	ConfigSetting("AnalogGestureSensibility", SETTING(g_Config.gestureControls[0], fAnalogGestureSensitivity), 1.0f, CfgFlag::PER_GAME),
