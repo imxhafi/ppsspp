@@ -169,6 +169,12 @@ struct GestureControlConfig : public ConfigBlock {
 	int iDoubleTapGesture = 0;
 	int iTapGesture = 0;
 	int iLongPressGesture = 0;
+	int iTwoFingerTapGesture = 0;
+	int iPinchInGesture = 0;
+	int iPinchOutGesture = 0;
+	int iShakeGesture = 0;
+	int iTwistGesture = 0;
+	int iFlipGesture = 0;
 	int iAnalogGesture = (int)AnalogGestureStick::OFF;
 	float fAnalogGestureSensitivity = 1.0f;
 
