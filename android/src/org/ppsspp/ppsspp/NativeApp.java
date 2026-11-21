@@ -170,9 +170,12 @@ public class NativeApp {
 	// so the existing PPSSPP on-screen controls continue to receive their original input.
 	private static boolean gestureTracking;
 	private static boolean gestureMultiTouch;
+	private static boolean gesturePinchFired;
 	private static float gestureDownX;
 	private static float gestureDownY;
+	private static float gestureTwoFingerDistance;
 	private static long gestureDownTime;
+	private static long lastGestureTapTime;
 
 	private static int readGestureValue(String key) {
 		try {
@@ -210,11 +213,35 @@ public class NativeApp {
 		keyUp(DEVICE_ID_DEFAULT, key);
 	}
 
+	public static void fireMotionGesture(String configKey) {
+		if (gestureControlEnabled()) {
+			fireGesture(readGestureValue(configKey));
+		}
+	}
+
+	private static float readGestureFloat(String key, float fallback) {
+		try {
+			return Float.parseFloat(queryConfig(key));
+		} catch (Exception e) {
+			return fallback;
+		}
+	}
+
+	private static float pointerDistance(MotionEvent ev) {
+		if (ev.getPointerCount() < 2) {
+			return 0.0f;
+		}
+		float dx = ev.getX(0) - ev.getX(1);
+		float dy = ev.getY(0) - ev.getY(1);
+		return (float)Math.sqrt(dx * dx + dy * dy);
+	}
+
 	private static void processGestureEvent(MotionEvent ev) {
 		final int action = ev.getActionMasked();
 		if (action == MotionEvent.ACTION_DOWN) {
 			gestureTracking = gestureControlEnabled();
 			gestureMultiTouch = false;
+			gesturePinchFired = false;
 			gestureDownX = ev.getX();
 			gestureDownY = ev.getY();
 			gestureDownTime = ev.getEventTime();
@@ -223,15 +250,37 @@ public class NativeApp {
 		if (!gestureTracking) {
 			return;
 		}
-		if (action == MotionEvent.ACTION_POINTER_DOWN || ev.getPointerCount() > 1) {
-			gestureMultiTouch = true;
-			return;
-		}
 		if (action == MotionEvent.ACTION_CANCEL) {
 			gestureTracking = false;
 			return;
 		}
-		if (action != MotionEvent.ACTION_UP || gestureMultiTouch) {
+		if (action == MotionEvent.ACTION_POINTER_DOWN && ev.getPointerCount() >= 2) {
+			gestureMultiTouch = true;
+			gestureTwoFingerDistance = pointerDistance(ev);
+			return;
+		}
+		if (gestureMultiTouch) {
+			if (action == MotionEvent.ACTION_MOVE && ev.getPointerCount() >= 2 && !gesturePinchFired) {
+				float delta = pointerDistance(ev) - gestureTwoFingerDistance;
+				if (Math.abs(delta) >= 55.0f) {
+					fireGesture(readGestureValue(delta < 0 ? "PinchInGesture" : "PinchOutGesture"));
+					gesturePinchFired = true;
+				}
+				return;
+			}
+			if (action == MotionEvent.ACTION_POINTER_UP && ev.getPointerCount() == 2) {
+				if (!gesturePinchFired && ev.getEventTime() - gestureDownTime <= 500) {
+					fireGesture(readGestureValue("TwoFingerTapGesture"));
+				}
+				gestureTracking = false;
+			}
+			return;
+		}
+		if (ev.getPointerCount() > 1) {
+			gestureMultiTouch = true;
+			return;
+		}
+		if (action != MotionEvent.ACTION_UP) {
 			return;
 		}
 
@@ -241,20 +290,16 @@ public class NativeApp {
 		final long duration = ev.getEventTime() - gestureDownTime;
 		final float sensitivity = Math.max(0.5f, readGestureFloat("SwipeSensitivity", 1.0f));
 		final float threshold = 90.0f / sensitivity;
-		final int actionId;
 		if (Math.max(Math.abs(dx), Math.abs(dy)) >= threshold) {
 			if (Math.abs(dx) > Math.abs(dy)) {
-				actionId = readGestureValue(dx < 0 ? "SwipeLeft" : "SwipeRight");
+				fireGesture(readGestureValue(dx < 0 ? "SwipeLeft" : "SwipeRight"));
 			} else {
-				actionId = readGestureValue(dy < 0 ? "SwipeUp" : "SwipeDown");
+				fireGesture(readGestureValue(dy < 0 ? "SwipeUp" : "SwipeDown"));
 			}
-			fireGesture(actionId);
 		} else if (duration >= 500) {
 			fireGesture(readGestureValue("LongPressGesture"));
 		} else {
 			fireGesture(readGestureValue("TapGesture"));
-			// Double-tap is recognized independently on the second tap.
-			// The first tap remains a normal single-tap action if one is assigned.
 			if (duration <= 300) {
 				long now = ev.getEventTime();
 				if (now - lastGestureTapTime <= 300) {
@@ -267,19 +312,11 @@ public class NativeApp {
 		}
 	}
 
-	private static long lastGestureTapTime;
-
-	private static float readGestureFloat(String key, float fallback) {
-		try {
-			return Float.parseFloat(queryConfig(key));
-		} catch (Exception e) {
-			return fallback;
-		}
-	}
-
 	// Forwarded from onTouchEvent in the SurfaceView classes.
 	public static void processTouchEvent(final MotionEvent ev) {
-		processGestureEvent(ev);
+		if (!isFromSource(ev, InputDevice.SOURCE_MOUSE)) {
+			processGestureEvent(ev);
+		}
 		if (isFromSource(ev, InputDevice.SOURCE_MOUSE)) {
 			// This is where workable mouse support arrived.
 			onMouseEventMotion(ev);
