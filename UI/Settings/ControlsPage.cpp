@@ -37,60 +37,6 @@
 #include "UI/TouchControlLayoutScreen.h"
 
 
-class GestureMappingScreen : public UISimpleBaseDialogScreen {
-public:
-	explicit GestureMappingScreen(const Path &gamePath)
-		: UISimpleBaseDialogScreen(gamePath, SimpleDialogFlags::ContentsCanScroll) {}
-
-	void CreateDialogViews(UI::ViewGroup *parent) override {
-		using namespace UI;
-		auto co = GetI18NCategory(I18NCat::CONTROLS);
-		GestureControlConfig &gesture = g_Config.gestureControls[0];
-
-		static const char *gestureActions[] = {
-			"Disabled", "Cross", "Circle", "Square", "Triangle", "L", "R", "Start", "Select"
-		};
-
-		ChoiceGroupList *groups = parent->Add(new ChoiceGroupList());
-		ChoiceGroup *enable = groups->Add(new ChoiceGroup(co->T("Gesture controller")));
-		enable->Add(new CheckBox(&gesture.bGestureControlEnabled, co->T("Enabled")));
-
-		ChoiceGroup *touch = groups->Add(new ChoiceGroup(co->T("Touch gestures")));
-		auto addMapping = [&](int *value, const char *label) {
-			touch->Add(new PopupMultiChoice(value, co->T(label), gestureActions, 0,
-				ARRAY_SIZE(gestureActions), I18NCat::CONTROLS, screenManager()))
-				->SetEnabledPtr(&gesture.bGestureControlEnabled);
-		};
-		addMapping(&gesture.iTapGesture, "Single tap");
-		addMapping(&gesture.iDoubleTapGesture, "Double tap");
-		addMapping(&gesture.iLongPressGesture, "Long press");
-		addMapping(&gesture.iTwoFingerTapGesture, "Two-finger tap");
-		addMapping(&gesture.iPinchInGesture, "Pinch in");
-		addMapping(&gesture.iPinchOutGesture, "Pinch out");
-		addMapping(&gesture.iShakeGesture, "Phone shake");
-		addMapping(&gesture.iTwistGesture, "Phone twist");
-		addMapping(&gesture.iFlipGesture, "Phone flip");
-		addMapping(&gesture.iSwipeUp, "Swipe up");
-		addMapping(&gesture.iSwipeDown, "Swipe down");
-		addMapping(&gesture.iSwipeLeft, "Swipe left");
-		addMapping(&gesture.iSwipeRight, "Swipe right");
-
-		ChoiceGroup *sensitivity = groups->Add(new ChoiceGroup(co->T("Sensitivity")));
-		sensitivity->Add(new PopupSliderChoiceFloat(&gesture.fSwipeSensitivity, 0.5f, 3.0f, 1.0f,
-			co->T("Swipe sensitivity"), 0.1f, screenManager(), "x"))
-			->SetEnabledPtr(&gesture.bGestureControlEnabled);
-	}
-
-	std::string_view GetTitle() const override {
-		auto co = GetI18NCategory(I18NCat::CONTROLS);
-		return co->T("Gesture mapping");
-	}
-
-	void onFinish(DialogResult result) override {
-		g_Config.Save("GestureMappingScreen::onFinish");
-	}
-};
-
 void BuildControlsSettings(SettingsPage *page) {
 	using namespace UI;
 	SettingsPageHost *host = page->Host();
