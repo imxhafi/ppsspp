@@ -4,6 +4,7 @@ import android.os.Build;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.InputEvent;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
 
@@ -164,8 +165,121 @@ public class NativeApp {
 		}
 	}
 
+
+	// Optional gesture recognition. Events are still forwarded to the normal touch path below,
+	// so the existing PPSSPP on-screen controls continue to receive their original input.
+	private static boolean gestureTracking;
+	private static boolean gestureMultiTouch;
+	private static float gestureDownX;
+	private static float gestureDownY;
+	private static long gestureDownTime;
+
+	private static int readGestureValue(String key) {
+		try {
+			return Integer.parseInt(queryConfig(key));
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+
+	private static boolean gestureControlEnabled() {
+		String value = queryConfig("GestureControlEnabled");
+		return "1".equals(value) || "true".equalsIgnoreCase(value);
+	}
+
+	private static int gestureKeyCode(int action) {
+		switch (action) {
+		case 1: return KeyEvent.KEYCODE_BUTTON_A;      // Cross
+		case 2: return KeyEvent.KEYCODE_BUTTON_B;      // Circle
+		case 3: return KeyEvent.KEYCODE_BUTTON_X;      // Square
+		case 4: return KeyEvent.KEYCODE_BUTTON_Y;      // Triangle
+		case 5: return KeyEvent.KEYCODE_BUTTON_L1;
+		case 6: return KeyEvent.KEYCODE_BUTTON_R1;
+		case 7: return KeyEvent.KEYCODE_BUTTON_START;
+		case 8: return KeyEvent.KEYCODE_BUTTON_SELECT;
+		default: return 0;
+		}
+	}
+
+	private static void fireGesture(int action) {
+		int key = gestureKeyCode(action);
+		if (key == 0) {
+			return;
+		}
+		keyDown(DEVICE_ID_DEFAULT, key, false);
+		keyUp(DEVICE_ID_DEFAULT, key);
+	}
+
+	private static void processGestureEvent(MotionEvent ev) {
+		final int action = ev.getActionMasked();
+		if (action == MotionEvent.ACTION_DOWN) {
+			gestureTracking = gestureControlEnabled();
+			gestureMultiTouch = false;
+			gestureDownX = ev.getX();
+			gestureDownY = ev.getY();
+			gestureDownTime = ev.getEventTime();
+			return;
+		}
+		if (!gestureTracking) {
+			return;
+		}
+		if (action == MotionEvent.ACTION_POINTER_DOWN || ev.getPointerCount() > 1) {
+			gestureMultiTouch = true;
+			return;
+		}
+		if (action == MotionEvent.ACTION_CANCEL) {
+			gestureTracking = false;
+			return;
+		}
+		if (action != MotionEvent.ACTION_UP || gestureMultiTouch) {
+			return;
+		}
+
+		gestureTracking = false;
+		final float dx = ev.getX() - gestureDownX;
+		final float dy = ev.getY() - gestureDownY;
+		final long duration = ev.getEventTime() - gestureDownTime;
+		final float sensitivity = Math.max(0.5f, readGestureFloat("SwipeSensitivity", 1.0f));
+		final float threshold = 90.0f / sensitivity;
+		final int actionId;
+		if (Math.max(Math.abs(dx), Math.abs(dy)) >= threshold) {
+			if (Math.abs(dx) > Math.abs(dy)) {
+				actionId = readGestureValue(dx < 0 ? "SwipeLeft" : "SwipeRight");
+			} else {
+				actionId = readGestureValue(dy < 0 ? "SwipeUp" : "SwipeDown");
+			}
+			fireGesture(actionId);
+		} else if (duration >= 500) {
+			fireGesture(readGestureValue("LongPressGesture"));
+		} else {
+			fireGesture(readGestureValue("TapGesture"));
+			// Double-tap is recognized independently on the second tap.
+			// The first tap remains a normal single-tap action if one is assigned.
+			if (duration <= 300) {
+				long now = ev.getEventTime();
+				if (now - lastGestureTapTime <= 300) {
+					fireGesture(readGestureValue("DoubleTapGesture"));
+					lastGestureTapTime = 0;
+				} else {
+					lastGestureTapTime = now;
+				}
+			}
+		}
+	}
+
+	private static long lastGestureTapTime;
+
+	private static float readGestureFloat(String key, float fallback) {
+		try {
+			return Float.parseFloat(queryConfig(key));
+		} catch (Exception e) {
+			return fallback;
+		}
+	}
+
 	// Forwarded from onTouchEvent in the SurfaceView classes.
 	public static void processTouchEvent(final MotionEvent ev) {
+		processGestureEvent(ev);
 		if (isFromSource(ev, InputDevice.SOURCE_MOUSE)) {
 			// This is where workable mouse support arrived.
 			onMouseEventMotion(ev);
